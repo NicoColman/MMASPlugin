@@ -39,9 +39,7 @@ void UMMAS_AnimInstance3P::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	UpdateEssentialValues(DeltaSeconds);
 	UpdateStates();
 	UpdateAimOffset();
-	UpdateLayeringValues();
 	UpdateAimValues();
-	
 }
 
 void UMMAS_AnimInstance3P::UpdateEssentialValues(const float DeltaSeconds)
@@ -60,7 +58,8 @@ void UMMAS_AnimInstance3P::UpdateEssentialValues(const float DeltaSeconds)
 	VelocityAcceleration = (Velocity - VelocityLastFrame) / FMath::Max(DeltaTimeX, 0.001f);
 	if (bHasVelocity) LastNonZeroVelocity = Velocity;
 
-	// TODO: Make it PreEvent
+	ControlRotation = MMAnimInstanceProxy.OwningCharacter->GetControlRotation();
+	
 	if (!CurrentSelectedDatabase) return;
 	LastFrameDatabaseTags = CurrentDatabaseTags;
 	if (!CurrentSelectedDatabase->Tags.IsEmpty()) CurrentDatabaseTags = CurrentSelectedDatabase->Tags;
@@ -74,15 +73,11 @@ void UMMAS_AnimInstance3P::UpdateStates()
 		case MOVE_Walking:
 		case MOVE_NavWalking:
 		case MOVE_None:
-		{
 			MovementMode = ECustomMovementMode::Grounded;
 			break;
-		}
 		case MOVE_Falling:
-		{
 			MovementMode = ECustomMovementMode::InAir;
 			break;
-		}
 		default:
 			break;
 	}
@@ -109,13 +104,6 @@ void UMMAS_AnimInstance3P::UpdateAimOffset()
 	SpineRotation = GetSpineRotation();
 }
 
-void UMMAS_AnimInstance3P::UpdateLayeringValues()
-{
-	if (!bShouldUpdateLayeringData && !CurrentSelectedDatabase) return;
-
-	
-}
-
 void UMMAS_AnimInstance3P::UpdateAimValues()
 {
 	bShouldOverlayAim = CanOverlayAim();
@@ -135,16 +123,16 @@ bool UMMAS_AnimInstance3P::CheckUpdateLayeringData(const bool bCurrent, const bo
 
 FTransform UMMAS_AnimInstance3P::GetRootBoneTransform(const FAnimNodeReference& Node) const
 {
-	if (!bOffsetRootBoneEnabled) return CharacterTransform;
+	// if (!bOffsetRootBoneEnabled) return CharacterTransform;
 	
 	const FTransform OffSetRootTransform = UAnimationWarpingLibrary::GetOffsetRootTransform(Node);
 	
 	FTransform RootBoneTransform;
 	RootBoneTransform.SetLocation(OffSetRootTransform.GetLocation());
-	UE::Math::TQuat<double> Rotator = OffSetRootTransform.GetRotation();
-	Rotator.Z += 90.f;
-	RootBoneTransform.SetRotation(Rotator);
-	RootBoneTransform.SetScale3D(UE::Math::TVector<double>(1.f, 1.f, 1.f));
+	FRotator Rotation = OffSetRootTransform.GetRotation().Rotator();
+	Rotation.Yaw += 90.f;
+	RootBoneTransform.SetRotation(Rotation.Quaternion());
+	RootBoneTransform.SetScale3D(FVector(1.f, 1.f, 1.f));
 	return RootBoneTransform;
 }
 
@@ -204,15 +192,11 @@ EOffsetRootBoneMode UMMAS_AnimInstance3P::GetOffsetRootTranslationMode() const
 	switch (MovementMode)
 	{
 		case ECustomMovementMode::Grounded:
-		{
 			OffsetRootBoneMode = bShouldMove ? EOffsetRootBoneMode::Interpolate : EOffsetRootBoneMode::Release;
 			break;
-		}
 		case ECustomMovementMode::InAir:
-		{
 			OffsetRootBoneMode = EOffsetRootBoneMode::Release;
 			break;
-		}
 		case ECustomMovementMode::Swimming:
 		default:
 			break;
@@ -239,8 +223,7 @@ bool UMMAS_AnimInstance3P::ShouldEnableAO() const
 FVector2D UMMAS_AnimInstance3P::GetAimOffsetValue() const
 {
 	if (!MMAnimInstanceProxy.OwningCharacter) return FVector2D();
-
-	const FRotator ControlRotation = MMAnimInstanceProxy.OwningCharacter->GetControlRotation();
+	
 	const FRotator RootRotation = RootTransform.GetRotation().Rotator();
 
 	UKismetMathLibrary::NormalizedDeltaRotator(ControlRotation, RootRotation);
@@ -254,7 +237,7 @@ bool UMMAS_AnimInstance3P::IsWithinAimOffsetThreshold() const
 
 FRotator UMMAS_AnimInstance3P::GetSpineRotation() const
 {
-	const FRotator Rotator = FRotator(0.f, 0.f, FMath::ClampAngle(AOValue.X, -90.f, 90.f / 6.f));
+	const FRotator Rotator = FRotator(0.f, FMath::ClampAngle(AOValue.X, -90.f, 90.f / 6.f), 0.f);
 	const FRotator InterpRotator = FMath::RInterpConstantTo(SpineRotation, Rotator, DeltaTimeX, 150.f);
 	return ShouldInterpolateSpineRotation() ? InterpRotator : Rotator;
 	
@@ -315,13 +298,9 @@ float UMMAS_AnimInstance3P::GetMMBlendTime() const
 	switch (MovementMode)
 	{
 	case ECustomMovementMode::Grounded:
-		{
 			return LastFrameMovementMode == ECustomMovementMode::Grounded ? 0.4f : 0.2f;
-		}
 	case ECustomMovementMode::InAir:
-		{
 			return Velocity.Z > 100.f ? 0.15f : 0.5;
-		}
 	case ECustomMovementMode::Swimming:
 	default:
 		return 0.2f;

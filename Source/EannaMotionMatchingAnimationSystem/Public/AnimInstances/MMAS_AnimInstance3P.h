@@ -52,6 +52,7 @@ protected:
 	FVector VelocityLastFrame;
 	FVector VelocityAcceleration;
 	FVector Acceleration;
+	FRotator ControlRotation;
 	FTransform CharacterTransform;
 	
 	TArray<FName> CurrentDatabaseTags;
@@ -129,14 +130,18 @@ protected:
 	FPoseSearchTrajectory_WorldCollisionResults TrajectoryCollisions;
 	UPROPERTY(BlueprintReadOnly, Category = "EannaMMAS|Motion Matching Values")
 	FTransform InteractionTransform;
-	
+
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	void UpdateEssentialValues(const float DeltaSeconds);
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	void UpdateStates();
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	void UpdateAimOffset();
-	void UpdateLayeringValues();
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	void UpdateAimValues();
 
 	// Essential Functions
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	bool CheckUpdateLayeringData(const bool bCurrent, const bool bLast);
 	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe, Category = "EannaMMAS|Essential Functions"))
 	FTransform GetRootBoneTransform(const FAnimNodeReference& Node) const;
@@ -172,15 +177,18 @@ protected:
 	bool ShouldEnableAO() const;
 	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe), Category = "EannaMMAS|AimOffset Functions")
 	FVector2D GetAimOffsetValue() const;
-	
+
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	bool IsWithinAimOffsetThreshold() const;
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	FRotator GetSpineRotation() const;
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	bool ShouldInterpolateSpineRotation() const;
 
 	// Additive Lean Functions
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	FVector GetRelativeAccelerationAmount() const;
 	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe), Category = "EannaMMAS|Additive Lean Functions")
-	
 	float GetLeanAmount() const;
 
 	// Motion Matching Functions
@@ -192,9 +200,12 @@ protected:
 	float GetMMBlendTime() const;
 	UFUNCTION( BlueprintPure, meta = (BlueprintThreadSafe), Category = "EannaMMAS|Motion Matching Functions")
 	EPoseSearchInterruptMode GetMMInterruptMode() const;
-	
+
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	bool ShouldInterruptCustomIdle() const;
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	bool ShouldTryToInterruptCustomIdle(const bool bInterrupt) const;
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	bool IsCustomIdleOrTransitioningOutOfCustomIdle() const;
 	void GenerateTrajectory();
 
@@ -207,6 +218,6 @@ protected:
 	// Aim Functions
 	UFUNCTION(BlueprintPure, meta = (BlueprintThreadSafe), Category = "EannaMMAS|Aim Functions")
 	bool IsPivoting() const;
-	
+	UFUNCTION(meta = (BlueprintThreadSafe))
 	bool CanOverlayAim() const;
 };

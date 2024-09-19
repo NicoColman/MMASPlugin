@@ -24,6 +24,7 @@ public:
 	virtual void InitializeObjects(UAnimInstance* InAnimInstance) override;
 	virtual void PreUpdate(UAnimInstance* InAnimInstance, float DeltaSeconds) override;
 	virtual void Update(float DeltaSeconds) override;
+	virtual void ClearObjects() override;
 
 	UPROPERTY(Transient)
 	TObjectPtr<AActor> OwningActor = nullptr;
@@ -31,6 +32,8 @@ public:
 	TObjectPtr<ACharacter> OwningCharacter = nullptr;
 	UPROPERTY(Transient)
 	UCharacterMovementComponent* OwningCharacterMovementComponent = nullptr;
+	UPROPERTY(Transient)
+	TObjectPtr<UAnimInstance> OwningAnimInstance = nullptr;
 };
 
 /**
@@ -42,7 +45,7 @@ class EANNAMOTIONMATCHINGANIMATIONSYSTEM_API UMMAS_AnimInstanceBase : public UAn
 	GENERATED_BODY()
 
 protected:
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "Example", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "Example")
 	FMMAnimInstanceProxy MMAnimInstanceProxy;
 
 private:

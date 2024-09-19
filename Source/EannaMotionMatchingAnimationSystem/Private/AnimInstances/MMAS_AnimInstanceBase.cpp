@@ -16,6 +16,7 @@ void FMMAnimInstanceProxy::InitializeObjects(UAnimInstance* InAnimInstance)
 	if (!OwningCharacter) return;
 
 	OwningCharacterMovementComponent = OwningCharacter->GetCharacterMovement();
+	OwningAnimInstance = InAnimInstance;
 }
 
 void FMMAnimInstanceProxy::PreUpdate(UAnimInstance* InAnimInstance, float DeltaSeconds)
@@ -26,4 +27,12 @@ void FMMAnimInstanceProxy::PreUpdate(UAnimInstance* InAnimInstance, float DeltaS
 void FMMAnimInstanceProxy::Update(float DeltaSeconds)
 {
 	FAnimInstanceProxy::Update(DeltaSeconds);
+}
+
+void FMMAnimInstanceProxy::ClearObjects()
+{
+	FAnimInstanceProxy::ClearObjects();
+	OwningCharacter = nullptr;
+	OwningCharacterMovementComponent = nullptr;
+	OwningAnimInstance = nullptr;
 }
